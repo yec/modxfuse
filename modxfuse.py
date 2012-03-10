@@ -9,8 +9,6 @@ import re
 import time
 from configobj import ConfigObj
 
-config = ConfigObj('config.ini')
-
 logger = logging.getLogger()
 hdlr = logging.FileHandler('/tmp/modxfuse.log')
 formatter = logging.Formatter('%(message)s')
@@ -22,10 +20,14 @@ fuse.fuse_python_api = (0, 2)
 
 attrs = {}
 
-conn = MySQLdb.connect(host = config.host,
-        user = config.username,
-        passwd = config.password,
-        db = config.db)
+config = ConfigObj('config.ini')
+
+conn = MySQLdb.connect(
+        host = config['host'],
+        user = config['username'],
+        passwd = config['password'],
+        db = config['db']
+        )
 
 cursor = conn.cursor()
 
