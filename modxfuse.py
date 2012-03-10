@@ -97,6 +97,8 @@ class MODxFS(Fuse):
         for row in rows:
             logger.info(row)
             files[path] = row[0]
+            if len(row) > 1:
+                editedon[path] = row[1]
             return True
 
         return False
@@ -118,6 +120,8 @@ class MODxFS(Fuse):
 
         elif self.is_file(path):
             logger.info(path)
+            if editedon.has_key(path):
+                st.st_mtime = editedon[path]
             st.st_mode = stat.S_IFREG | 0666
             st.st_nlink = 1
             st.st_size = len(files[path])
