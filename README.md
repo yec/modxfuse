@@ -6,6 +6,8 @@ FUSE system for MODx.
 Edit templates and database contents using a standard text editor instead of
 the slow web interface.
 
+![screenshot](http://i.imgur.com/9efjL.png)
+
 Instructions
 ------------
 
