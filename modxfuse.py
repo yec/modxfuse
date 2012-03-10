@@ -57,10 +57,6 @@ class MODxFS(Fuse):
         if path == '/':
             st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
-#            elif path == hello_path:
-#                st.st_mode = stat.S_IFREG | 0666
-#                st.st_nlink = 1
-#                st.st_size = len(hello_str)
         elif path == '/modx_site_content':
             st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
