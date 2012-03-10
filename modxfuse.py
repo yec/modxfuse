@@ -84,13 +84,16 @@ class MODxFS(Fuse):
 
         rows = execute_query(self.dirs[path]['list'])
         for row in rows:
-            filenames.append(str(row[0]))
+            filenames.append(str(row[0]) + ext)
 
         return filenames
 
     def is_file(self, path):
 
-        dirpath, index = self.dirpath_index(path)
+        try:
+            dirpath, index = self.dirpath_index(path)
+        except:
+            return False
 
         rows = execute_query( self.dirs[dirpath]['get'], ( index ) )
 
@@ -104,7 +107,7 @@ class MODxFS(Fuse):
         return False
 
     def dirpath_index(self, path):
-        match = re.search('^(/\w+?)/([0-9]+)$', path)
+        match = re.search('^(/\w+?)/([0-9]+)'+ext+'$', path)
         return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
