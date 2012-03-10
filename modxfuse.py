@@ -118,7 +118,7 @@ class MODxFS(Fuse):
         return False
 
     def dirpath_index(self, path):
-        match = re.search('^(/\w+?)/([0-9\w\-\s"\'\(\)\[\]]+)'+ext+'$', path)
+        match = re.search('^(/\w+?)/([^\.][\w\-\s"\'\(\)\[\]\{\}]+)'+ext+'$', path)
         return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
