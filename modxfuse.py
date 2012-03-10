@@ -67,14 +67,24 @@ class MODxFS(Fuse):
 
         self.dirs = {
                 '/modx_site_content': {
-                    'list':'select id from modx_site_content',
-                    'get': 'select content, editedon from modx_site_content where id = %s',
-                    'put': 'update modx_site_content set content = %s where id=%s',
+                    'list':'select pagetitle from modx_site_content',
+                    'get': 'select content, editedon from modx_site_content where pagetitle = %s',
+                    'put': 'update modx_site_content set content = %s where pagetitle =%s',
+                    },
+                '/modx_site_templates': {
+                    'list':'select templatename from modx_site_templates',
+                    'get': 'select content from modx_site_templates where templatename = %s',
+                    'put': 'update modx_site_templates set content = %s where templatename=%s',
                     },
                 '/modx_site_htmlsnippets': {
                     'list': 'select id from modx_site_htmlsnippets',
                     'get': 'select snippet from modx_site_htmlsnippets where id = %s',
                     'put': 'update modx_site_htmlsnippets set snippet = %s where id=%s',
+                    },
+                '/modx_site_tmplvar_contentvalues': {
+                    'list': 'select id from modx_site_tmplvar_contentvalues',
+                    'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
+                    'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
                     }
                 }
 
@@ -90,6 +100,7 @@ class MODxFS(Fuse):
 
     def is_file(self, path):
 
+        logger.info(path)
         try:
             dirpath, index = self.dirpath_index(path)
         except:
@@ -107,7 +118,7 @@ class MODxFS(Fuse):
         return False
 
     def dirpath_index(self, path):
-        match = re.search('^(/\w+?)/([0-9]+)'+ext+'$', path)
+        match = re.search('^(/\w+?)/([0-9\w\-\s"\'\(\)\[\]]+)'+ext+'$', path)
         return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
