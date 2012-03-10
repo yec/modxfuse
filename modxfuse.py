@@ -18,20 +18,10 @@ logger.setLevel(logging.INFO)
 
 fuse.fuse_python_api = (0, 2)
 
-attrs = {}
-
 config = ConfigObj('config.ini')
 
-conn = MySQLdb.connect(
-        host = config['host'],
-        user = config['username'],
-        passwd = config['password'],
-        db = config['db']
-        )
-
-cursor = conn.cursor()
-
 files = {}
+editedon = {}
 
 ext = '.html'
 
@@ -48,8 +38,72 @@ class MyStat(fuse.Stat):
         self.st_mtime=0
         self.st_ctime=0
 
+def execute_query(query, args = None):
+
+    conn = MySQLdb.connect(
+        host = config['host'],
+        user = config['username'],
+        passwd = config['password'],
+        db = config['db']
+        )
+    cursor = conn.cursor()
+
+    if args != None:
+        cursor.execute(query, args)
+    else:
+        cursor.execute(query)
+
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return rows
+
 class MODxFS(Fuse):
 
+
+    def __init__(self, *arr, **dic):
+        Fuse.__init__(self, *arr, **dic)
+
+        self.dirs = {
+                '/modx_site_content': {
+                    'list':'select id from modx_site_content',
+                    'get': 'select content, editedon from modx_site_content where id = %s',
+                    'put': 'update modx_site_content set content = %s where id=%s',
+                    },
+                '/modx_site_htmlsnippets': {
+                    'list': 'select id from modx_site_htmlsnippets',
+                    'get': 'select snippet from modx_site_htmlsnippets where id = %s',
+                    'put': 'update modx_site_htmlsnippets set snippet = %s where id=%s',
+                    }
+                }
+
+    def files_in_dir(self, path):
+
+        filenames = []
+
+        rows = execute_query(self.dirs[path]['list'])
+        for row in rows:
+            filenames.append(str(row[0]))
+
+        return filenames
+
+    def is_file(self, path):
+
+        dirpath, index = self.dirpath_index(path)
+
+        rows = execute_query( self.dirs[dirpath]['get'], ( index ) )
+
+        for row in rows:
+            logger.info(row)
+            files[path] = row[0]
+            return True
+
+        return False
+
+    def dirpath_index(self, path):
+        match = re.search('^(/\w+?)/([0-9]+)$', path)
+        return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
         st = MyStat()
@@ -57,28 +111,21 @@ class MODxFS(Fuse):
         if path == '/':
             st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
-        elif path == '/modx_site_content':
+
+        elif self.dirs.has_key(path):
             st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
-        elif re.search('/(.+?)/', path).group(1) == 'modx_site_content':
-            index = re.search('/([0-9]+)', path).group(1)
-            cursor.execute('select content, editedon from modx_site_content where id = %s' % str(index))
-            rows = cursor.fetchall()
-            for row in rows:
-                logger.info(row)
-                st.st_mode = stat.S_IFREG | 0666
-                st.st_nlink = 1
-                st.st_size = len(row[0])
-                st.st_mtime = row[1]
-                files[path] = row[0]
-                return st
 
-            return -errno.ENOENT
-
+        elif self.is_file(path):
+            logger.info(path)
+            st.st_mode = stat.S_IFREG | 0666
+            st.st_nlink = 1
+            st.st_size = len(files[path])
         else:
             return -errno.ENOENT
 
         return st
+
 
     def readdir(self, path, offset):
 
@@ -86,33 +133,22 @@ class MODxFS(Fuse):
         '..']
 
         if path == '/':
-            ret.append('modx_site_content')
+            for dirpath in self.dirs.keys():
+                ret.append(dirpath[1:])
 
-        elif path == '/modx_site_content':
-            cursor.execute('select id from modx_site_content')
-            rows = cursor.fetchall()
-            for row in rows:
-                ret.append(str(row[0]) + ext)
+        elif self.dirs.has_key(path):
+            for filename in self.files_in_dir(path):
+                ret.append(filename)
 
         for r in ret:
             yield fuse.Direntry(r)
 
-
     def open(self,path,flags):
 
-        logger.info('open flag: %s' % flags)
-        if re.search('/(.+?)/', path).group(1) == 'modx_site_content':
-            index = re.search('/([0-9]+)', path).group(1)
-            cursor.execute('select content from modx_site_content where id = %s' % str(index))
-            rows = cursor.fetchall()
-            for row in rows:
-                files[path] = row[0]
-                return 0
+        if self.is_file(path):
+            return 0
 
         return -errno.ENOENT
-        #if (flags & 3) != os.O_RDONLY:
-            #return -errno.EACCES
-
 
     def read(self,path,size,offset):
 
@@ -125,16 +161,14 @@ class MODxFS(Fuse):
                 buf = body[offset:offset+size]
             else:
                 buf = ''
-            logger.info(buf)
             return buf
         else:
             return -errno.ENOENT
 
-
     def write(self, path, txt, offset):
         if files.has_key(path):
-            index = re.search('/([0-9]+)', path).group(1)
-            cursor.execute("""update modx_site_content set content = %s,editedon = %s where id=%s""", (txt, time.time(), index))
+            dirpath, index = self.dirpath_index(path)
+            execute_query(self.dirs[dirpath]['put'], (txt, index))
             logger.info(txt)
             logger.info('offset: %s' % offset)
             return len(txt)
@@ -160,8 +194,8 @@ class MODxFS(Fuse):
         if files.has_key(path):
             files[path] = ''
             txt = ''
-            index = re.search('/([0-9]+)', path).group(1)
-            cursor.execute("""update modx_site_content set content = %s,editedon = %s where id=%s""", (txt, time.time(), index))
+            dirpath, index = self.dirpath_index(path)
+            execute_query(self.dirs[dirpath]['put'], (txt, index))
 
         logger.info('truncate: %s' % path)
         return 0
