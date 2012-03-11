@@ -12,10 +12,10 @@ Instructions
 ------------
 
 * Edit config.ini to point to the database.
+* Run the following code:
 
-Run the following code:
-
-    easy_install fuse-python
-    mkdir tmp
-    python modxfuse.py tmp
-
+        easy_install MySQL-python
+        easy_install fuse-python
+        easy_install configobj
+        mkdir tmp
+        python modxfuse.py tmp
