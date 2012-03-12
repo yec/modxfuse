@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import StringIO
 import MySQLdb
 import logging
 import os,stat,errno
@@ -23,6 +24,7 @@ config = ConfigObj('config.ini')
 
 files = {}
 editedon = {}
+writebuffer = StringIO.StringIO()
 
 ext = '.html'
 
@@ -137,7 +139,6 @@ class MODxFS(Fuse):
         rows = execute_query( self.dirs[dirpath]['get'], ( index ) )
 
         for row in rows:
-            logger.info(row)
             files[path] = row[0]
             if len(row) > 1:
                 editedon[path] = row[1]
@@ -164,7 +165,6 @@ class MODxFS(Fuse):
             st.st_nlink = 2
 
         elif self.is_file(path):
-            logger.info(path)
             if editedon.has_key(path):
                 st.st_mtime = editedon[path]
             st.st_mode = stat.S_IFREG | 0666
@@ -217,9 +217,8 @@ class MODxFS(Fuse):
     def write(self, path, txt, offset):
         """ FUSE method. write file """
         if files.has_key(path):
-            dirpath, index = self.dirpath_index(path)
-            execute_query(self.dirs[dirpath]['put'], (txt, index))
-            logger.info(txt)
+            writebuffer.seek(offset)
+            writebuffer.write(txt)
             logger.info('offset: %s' % offset)
             return len(txt)
         return -errno.ENOSYS
@@ -227,8 +226,10 @@ class MODxFS(Fuse):
 
     def release(self, path, flags):
         """ FUSE method. release file """
-        logger.info(path)
-        logger.info('release flag: %s' % flags)
+        if files.has_key(path) and flags == 1:
+            dirpath, index = self.dirpath_index(path)
+            execute_query(self.dirs[dirpath]['put'], (writebuffer.getvalue(), index))
+        logger.info('release flag: %s %s' % flags, path)
         return 0
 
     def mknod(self, path, mode, dev):
@@ -249,6 +250,7 @@ class MODxFS(Fuse):
         if files.has_key(path):
             files[path] = ''
             txt = ''
+            writebuffer.truncate()
             dirpath, index = self.dirpath_index(path)
             execute_query(self.dirs[dirpath]['put'], (txt, index))
 
