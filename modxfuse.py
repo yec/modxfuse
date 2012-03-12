@@ -70,21 +70,31 @@ class MODxFS(Fuse):
                     'list':'select pagetitle from modx_site_content',
                     'get': 'select content, editedon from modx_site_content where pagetitle = %s',
                     'put': 'update modx_site_content set content = %s where pagetitle =%s',
+                    'ext': '.html'
                     },
                 '/modx_site_templates': {
                     'list':'select templatename from modx_site_templates',
                     'get': 'select content from modx_site_templates where templatename = %s',
                     'put': 'update modx_site_templates set content = %s where templatename=%s',
+                    'ext': '.html'
                     },
                 '/modx_site_htmlsnippets': {
                     'list': 'select id from modx_site_htmlsnippets',
                     'get': 'select snippet from modx_site_htmlsnippets where id = %s',
                     'put': 'update modx_site_htmlsnippets set snippet = %s where id=%s',
+                    'ext': '.html'
+                    },
+                '/modx_site_snippets': {
+                    'list': 'select name from modx_site_snippets',
+                    'get': 'select snippet from modx_site_snippets where name = %s',
+                    'put': 'update modx_site_snippets set snippet = %s where name=%s',
+                    'ext': '.php'
                     },
                 '/modx_site_tmplvar_contentvalues': {
                     'list': 'select id from modx_site_tmplvar_contentvalues',
                     'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
                     'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
+                    'ext': '.html'
                     }
                 }
 
@@ -94,7 +104,7 @@ class MODxFS(Fuse):
 
         rows = execute_query(self.dirs[path]['list'])
         for row in rows:
-            filenames.append(str(row[0]) + ext)
+            filenames.append(str(row[0]) + self.dirs[path]['ext'])
 
         return filenames
 
@@ -118,7 +128,7 @@ class MODxFS(Fuse):
         return False
 
     def dirpath_index(self, path):
-        match = re.search('^(/\w+?)/([\w\-\s"\'\(\)\[\]\{\}]+)'+ext+'$', path)
+        match = re.search('^(/\w+?)/([\w\-\s"\'\(\)\[\]\{\}]+)(\.html|\.php)$', path)
         return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
