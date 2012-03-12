@@ -76,7 +76,9 @@ class MODxFS(Fuse):
                   index nominated above.
 
             put:  Update the record with the first argument being the content
-                  and the second argument being your nominated index """
+                  and the second argument being your nominated index.
+
+            ext:  The extension for the file. Can be .html or .php. """
 
         self.dirs = {
                 '/modx_site_content': {
@@ -150,7 +152,7 @@ class MODxFS(Fuse):
         return (match.group(1), str(match.group(2)))
 
     def getattr(self, path):
-        """ Method required by FUSE. Return file information. """
+        """ FUSE method. Return file information. """
         st = MyStat()
 
         if path == '/':
