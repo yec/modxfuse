@@ -219,6 +219,8 @@ class MODxFS(Fuse):
         if files.has_key(path):
             writebuffer.seek(offset)
             writebuffer.write(txt)
+            dirpath, index = self.dirpath_index(path)
+            execute_query(self.dirs[dirpath]['put'], (writebuffer.getvalue(), index))
             logger.info('offset: %s' % offset)
             return len(txt)
         return -errno.ENOSYS
