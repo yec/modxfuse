@@ -84,9 +84,9 @@ class MODxFS(Fuse):
 
         self.dirs = {
                 '/modx_site_content': {
-                    'list':'select pagetitle from modx_site_content',
-                    'get': 'select content, editedon from modx_site_content where pagetitle = %s',
-                    'put': 'update modx_site_content set content = %s where pagetitle =%s',
+                    'list':'select concat(id, " ", pagetitle, " | ", id) from modx_site_content',
+                    'get': 'select content, editedon from modx_site_content where id = %s',
+                    'put': 'update modx_site_content set content = %s where id =%s',
                     'ext': '.html'
                     },
                 '/modx_site_templates': {
