@@ -277,6 +277,14 @@ class MODxFS(Fuse):
 
     def fsync(self, path, isfsyncnofile):
         """ FUSE method. fsync """
+        path = "/var/www/agl034/assets/cache/"
+        for each in os.listdir(path):
+            if each.endswith(".php"):
+                name = os.path.join(path, each)
+                try: os.remove(name)
+                except:
+                    logger.info('cache delete failed')
+
         logger.info('fsync: %s' % path)
         return 0
 
