@@ -252,7 +252,7 @@ class MODxFS(Fuse):
         if files.has_key(path):
             files[path] = ''
             txt = ''
-            writebuffer.truncate()
+            writebuffer.truncate(0)
             dirpath, index = self.dirpath_index(path)
             execute_query(self.dirs[dirpath]['put'], (txt, index))
 
