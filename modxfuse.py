@@ -216,6 +216,8 @@ class MODxFS(Fuse):
                 buf = body[offset:offset+size]
             else:
                 buf = ''
+
+            logger.info('read: %s' % size)
             return buf
         else:
             return -errno.ENOENT
