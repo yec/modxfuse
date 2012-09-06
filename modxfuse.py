@@ -96,9 +96,9 @@ class MODxFS(Fuse):
                     'ext': '.html'
                     },
                 '/modx_site_htmlsnippets': {
-                    'list': 'select id from modx_site_htmlsnippets',
-                    'get': 'select snippet from modx_site_htmlsnippets where id = %s',
-                    'put': 'update modx_site_htmlsnippets set snippet = %s where id=%s',
+                    'list': 'select name from modx_site_htmlsnippets',
+                    'get': 'select snippet from modx_site_htmlsnippets where name = %s',
+                    'put': 'update modx_site_htmlsnippets set snippet = %s where name = %s',
                     'ext': '.html'
                     },
                 '/modx_site_snippets': {
@@ -108,7 +108,7 @@ class MODxFS(Fuse):
                     'ext': '.php'
                     },
                 '/modx_site_tmplvar_contentvalues': {
-                    'list': 'select id from modx_site_tmplvar_contentvalues',
+                    'list': 'select concat(msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
                     'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
                     'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
                     'ext': '.html'
@@ -149,8 +149,14 @@ class MODxFS(Fuse):
     def dirpath_index(self, path):
         """ Seperate path into table and index components. """
         # TODO: Is ugly regex at the moment. Could be performed in a better way.
-        match = re.search('^(/\w+?)/([\w\-\s"\'\(\)\[\]\{\}]+)(\.html|\.php)$', path)
-        return (match.group(1), str(match.group(2)))
+        match = re.search('^(/\w+?)/([\|\w\-\s"\'\(\)\[\]\{\}]+)(\.html|\.php)$', path)
+        index = str(match.group(2)).split("|");
+        logger.info('index: %s' % index)
+
+        if len(index) > 1:
+            index = index[1].strip()
+
+        return (match.group(1), index)
 
     def getattr(self, path):
         """ FUSE method. Return file information. """
