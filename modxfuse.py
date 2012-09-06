@@ -277,7 +277,7 @@ class MODxFS(Fuse):
 
     def fsync(self, path, isfsyncnofile):
         """ FUSE method. fsync """
-        path = "/var/www/agl034/assets/cache/"
+        path = config['cache']
         for each in os.listdir(path):
             if each.endswith(".php"):
                 name = os.path.join(path, each)
