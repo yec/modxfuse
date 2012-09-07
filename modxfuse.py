@@ -24,6 +24,7 @@ config = ConfigObj('config.ini')
 
 files = {}
 editedon = {}
+unlinked = []
 writebuffer = StringIO.StringIO()
 
 ext = '.html'
@@ -128,6 +129,10 @@ class MODxFS(Fuse):
     def is_file(self, path):
         """ Check if specified path is a file
         this check is done at the database so is quite costly """
+
+        # check if deleted
+        if path in unlinked:
+            return False
 
         # First see if can split path into its directory and file component
         try:
@@ -253,6 +258,8 @@ class MODxFS(Fuse):
 
     def unlink(self, path):
         """ FUSE method. unlink """
+        unlinked.append(path);
+        logger.info('unlinked: %s' % path)
         return 0
 
     def truncate(self, path, size):
