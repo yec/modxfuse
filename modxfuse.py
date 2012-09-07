@@ -84,7 +84,7 @@ class MODxFS(Fuse):
 
         self.dirs = {
                 '/modx_site_content': {
-                    'list':'select concat(id, " ", pagetitle, " | ", id) from modx_site_content',
+                    'list':'select concat(lpad(id, 2, "0"), " ", pagetitle, " | ", id) from modx_site_content',
                     'get': 'select content, editedon from modx_site_content where id = %s',
                     'put': 'update modx_site_content set content = %s where id =%s',
                     'ext': '.html'
@@ -108,7 +108,7 @@ class MODxFS(Fuse):
                     'ext': '.php'
                     },
                 '/modx_site_tmplvar_contentvalues': {
-                    'list': 'select concat(mstc.id, " ", msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
+                    'list': 'select concat(lpad(mstc.id, 2, "0"), " ", msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
                     'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
                     'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
                     'ext': '.html'
