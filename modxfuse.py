@@ -87,7 +87,7 @@ class MODxFS(Fuse):
                 '/modx_site_content': {
                     'list':'select concat(lpad(id, 2, "0"), " ", pagetitle, " | ", id) from modx_site_content',
                     'get': 'select content, editedon from modx_site_content where id = %s',
-                    'put': 'update modx_site_content set content = %s where id =%s',
+                    'put': 'update modx_site_content set content = %s, editedon = unix_timestamp(now()) where id =%s',
                     'ext': '.html'
                     },
                 '/modx_site_templates': {
