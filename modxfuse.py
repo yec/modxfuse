@@ -254,7 +254,11 @@ class MODxFS(Fuse):
 
     def create(self, path, mode, dev):
         """ FUSE method. create """
-        return -errno.EACCES
+        if path in unlinked:
+            unlinked.remove(path)
+            return 0
+        else:
+            return -errno.EACCES
 
     def unlink(self, path):
         """ FUSE method. unlink """
