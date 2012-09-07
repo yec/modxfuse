@@ -90,25 +90,25 @@ class MODxFS(Fuse):
                     'ext': '.html'
                     },
                 '/modx_site_templates': {
-                    'list':'select templatename from modx_site_templates',
-                    'get': 'select content from modx_site_templates where templatename = %s',
-                    'put': 'update modx_site_templates set content = %s where templatename=%s',
+                    'list':'select concat(templatename, " | ", id) from modx_site_templates',
+                    'get': 'select content from modx_site_templates where id = %s',
+                    'put': 'update modx_site_templates set content = %s where id=%s',
                     'ext': '.html'
                     },
                 '/modx_site_htmlsnippets': {
-                    'list': 'select name from modx_site_htmlsnippets',
-                    'get': 'select snippet from modx_site_htmlsnippets where name = %s',
-                    'put': 'update modx_site_htmlsnippets set snippet = %s where name = %s',
+                    'list': 'select concat(name, " | ", id) from modx_site_htmlsnippets',
+                    'get': 'select snippet from modx_site_htmlsnippets where id = %s',
+                    'put': 'update modx_site_htmlsnippets set snippet = %s where id = %s',
                     'ext': '.html'
                     },
                 '/modx_site_snippets': {
-                    'list': 'select name from modx_site_snippets',
-                    'get': 'select snippet from modx_site_snippets where name = %s',
-                    'put': 'update modx_site_snippets set snippet = %s where name=%s',
+                    'list': 'select concat(name, " | ", id) from modx_site_snippets',
+                    'get': 'select snippet from modx_site_snippets where id = %s',
+                    'put': 'update modx_site_snippets set snippet = %s where id=%s',
                     'ext': '.php'
                     },
                 '/modx_site_tmplvar_contentvalues': {
-                    'list': 'select concat(msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
+                    'list': 'select concat(mstc.id, " ", msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
                     'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
                     'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
                     'ext': '.html'
@@ -163,11 +163,11 @@ class MODxFS(Fuse):
         st = MyStat()
 
         if path == '/':
-            st.st_mode = stat.S_IFDIR | 0777
+            st.st_mode = stat.S_IFDIR | 0555
             st.st_nlink = 2
 
         elif self.dirs.has_key(path):
-            st.st_mode = stat.S_IFDIR | 0777
+            st.st_mode = stat.S_IFDIR | 0555
             st.st_nlink = 2
 
         elif self.is_file(path):
