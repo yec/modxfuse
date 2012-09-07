@@ -163,11 +163,11 @@ class MODxFS(Fuse):
         st = MyStat()
 
         if path == '/':
-            st.st_mode = stat.S_IFDIR | 0555
+            st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
 
         elif self.dirs.has_key(path):
-            st.st_mode = stat.S_IFDIR | 0555
+            st.st_mode = stat.S_IFDIR | 0777
             st.st_nlink = 2
 
         elif self.is_file(path):
