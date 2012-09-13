@@ -109,7 +109,7 @@ class MODxFS(Fuse):
                     'ext': '.php'
                     },
                 '/modx_site_tmplvar_contentvalues': {
-                    'list': 'select concat(lpad(mstc.id, 2, "0"), " ", msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
+                    'list': 'select concat(lpad(msc.id, 2, "0"), " ", msc.pagetitle, " - ", mst.name , " | ", mstc.id ) name from modx_site_tmplvar_contentvalues mstc join modx_site_content msc on mstc.contentid = msc.id join modx_site_tmplvars mst on mst.id = mstc.tmplvarid',
                     'get': 'select value from modx_site_tmplvar_contentvalues where id = %s',
                     'put': 'update modx_site_tmplvar_contentvalues set value = %s where id=%s',
                     'ext': '.html'
